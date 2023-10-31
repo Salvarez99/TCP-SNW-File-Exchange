@@ -26,7 +26,7 @@ class TCP_Transport:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind((serverIP, serverPort))
         self.socket.listen()
-        print("Connected")
+        print("Listening...")
         pass
 
         """Put a file into the server directly from client
@@ -46,7 +46,6 @@ class TCP_Transport:
             path = "/home1/s/s/sa851266/project01/client_files/"
         # TODO: add functionality for server path
         # if serverpath place file in server files folder
-
 
         # dirlist = os.listdir(path)
         # if (filename in dirlist):
@@ -87,6 +86,7 @@ class TCP_Transport:
     def temp(self):
         while True:
             clientSocket, address = self.socket.accept()
+            print("Connected to client")
             with clientSocket:
 
                 full_msg = ""

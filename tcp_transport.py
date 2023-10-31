@@ -9,6 +9,9 @@ class TCP_Transport:
     def __init__(self) -> None:
         self.socket = None
         self.HEADERSIZE = 20
+        self.client_path = "/home1/s/s/sa851266/project01/client_files"
+        self.server_path = "/home1/s/s/sa851266/project01/server_files"
+        self.cache_path = "/home1/s/s/sa851266/project01/cache_files"
         pass
 
         """Connect to a Host
@@ -30,178 +33,71 @@ class TCP_Transport:
         pass
 
         """Put a file into the server directly from client
+        Param1: filename: name of file being sent
+        Param2: path: the path where the file is located ("server" | "cache" | "client")
         """
+    def put(self, fileName : str, path : str):
 
-    def put(self, filename: str, pathChoice: str):
+        """
+        1. Designate which path we should look in to find the file that is going to be sent
+        2. Find the file from specified path
+            2.1a if the file exist, create str that has path + filename
+            2.1b if the file doesn't exist, exit
+            2.2a if the path is the client, create str but add "" + filename
+        3. Send the filename
+        4. Send the size of file
+        5. Send file
+        
+        """
+        #checks to see if the file from given path exist
+        #otherwise exit program
+        file_path = self.fileExistInDir(fileName, path)
+        file_name = os.path.basename(file_path)
 
-        # client puts files into server_files
-        # cache puts files into client_files
-        # server puts files into client_files
+        #Send the length of the file name and file name
+        file_name_length = str(len(file_name)).zfill(10)
+        self.socket.send(file_name_length.encode())
+        self.socket.send(file_name.encode())
 
-        if pathChoice == "server":
-            path = "/home1/s/s/sa851266/project01/server_files/"
-        elif pathChoice == "cache":
-            path = "/home1/s/s/sa851266/project01/cache_files/"
-        else:
-            path = "/home1/s/s/sa851266/project01/client_files/"
-        # TODO: add functionality for server path
-        # if serverpath place file in server files folder
+        #Send the length of the file size and file size
+        file_size = os.path.getsize(file_path)
+        file_size_length = str(len(str(file_size))).zfill(10)
+        self.socket.send(file_size_length.encode())
+        self.socket.send(str(file_size).encode())
 
-        # dirlist = os.listdir(path)
-        # if (filename in dirlist):
 
-            # send file path
-            sendPath = f"{len(filename):<{self.HEADERSIZE}}" + filename
-            self.socket.send(sendPath.encode())
-
-            # send filename
-            sendfilename = f"{len(filename):<{self.HEADERSIZE}}" + filename
-            self.socket.send(sendfilename.encode())
-
-            # send file size
-            file = open(filename, "rb")
-            # get file size as string
-            sizeOfFile = str(os.path.getsize(filename))
-            print(f"Size of file: {sizeOfFile}")
-            # add header
-            sizeOfFile = f"{len(sizeOfFile):< {self.HEADERSIZE}}" + sizeOfFile
-            self.socket.send(sizeOfFile.encode())
-
-            # Sending file over socket
+        with open(file_path, "rb") as file:
             data = file.read(1024)
-
             while data:
-                if not data:
-                    break
                 self.socket.send(data)
                 data = file.read(1024)
-
-            message = self.socket.recv(1024)
-            print(message.decode())
-            # self.socket.close()
-        # else:
-            # sys.exit()
         pass
 
-    def temp(self):
-        while True:
-            clientSocket, address = self.socket.accept()
-            print("Connected to client")
-            with clientSocket:
-
-                full_msg = ""
-                new_msg = True
-                while True:
-
-                    pathHeader = clientSocket.recv(1024)
-
-                    if len(pathHeader) != 0:
-                        print(pathHeader.decode())
-
-                        if new_msg:
-                            # print( f"File name header: {pathHeader[:self.HEADERSIZE].decode()}")
-                            msg_len = int(pathHeader[:self.HEADERSIZE])
-                            new_msg = False
-
-                        full_msg += pathHeader.decode()
-
-                        if len(full_msg) - self.HEADERSIZE == msg_len:
-                            # print(
-                            #     f"full msg received: {full_msg[self.HEADERSIZE:]}")
-                            fileName = full_msg[self.HEADERSIZE:]
-                            print(f"File Name: {fileName}")
-
-                            new_msg = True
-                            full_msg = ""
-
-                        # --------------------------------------------------------
-
-                        fileNameHeader = clientSocket.recv(1024)
-
-                        print(fileNameHeader.decode())
-
-                        if new_msg:
-                            # print( f"File name header: {fileNameHeader[:self.HEADERSIZE].decode()}")
-                            msg_len = int(fileNameHeader[:self.HEADERSIZE])
-                            new_msg = False
-
-                        full_msg += fileNameHeader.decode()
-
-                        if len(full_msg) - self.HEADERSIZE == msg_len:
-                            # print(
-                            #     f"full msg received: {full_msg[self.HEADERSIZE:]}")
-                            fileName = full_msg[self.HEADERSIZE:]
-                            print(f"File Name: {fileName}")
-
-                            new_msg = True
-                            full_msg = ""
-
-                        # --------------------------------------------------------
-
-                        sizeOfFile = clientSocket.recv(1024)
-                        # print(sizeOfFile.decode())
-
-                        if new_msg:
-                            # print(f"new message length: {sizeOfFile[:self.HEADERSIZE].decode()}")
-                            msg_len = int(sizeOfFile[:self.HEADERSIZE])
-                            new_msg = False
-
-                        full_msg += sizeOfFile.decode()
-
-                        if len(full_msg) - self.HEADERSIZE == msg_len:
-                            # print(
-                            #     f"full msg received: {full_msg[self.HEADERSIZE:]}")
-                            sizeOfFile = int(full_msg[self.HEADERSIZE:])
-                            receivedDataSize = 0
-                            print(
-                                f"Incoming file size: {sizeOfFile}\n\n")
-
-                            new_msg = True
-                            full_msg = ""
-
-                            # TODO: uncomment and change dir to put file in correct place
-                            # newFile = open(fileName, "wb")
-                            newFile = open("receivedFile.txt", "wb")
-
-                            while True:
-                                print(f"data received: {receivedDataSize}")
-                                print(f"size of file: {sizeOfFile}")
-                                data = clientSocket.recv(1024)
-                                receivedDataSize += len(data)
-
-                                newFile.write(data)
-                                if receivedDataSize == sizeOfFile:
-                                    receivedDataSize + 20
-                                    break
-                                if receivedDataSize > sizeOfFile:
-                                    break
-
-                            newFile.close()
-
-                            reMessage = "File Successfully Uploaded"
-
-                            clientSocket.send(reMessage.encode())
-                            print("done")
-                            # clientSocket.close()
-                            # self.socket.close()
-
-                        break
-                # Cant break on line 145, will close the socket so client will not be able to connect again afterwards
-
-        pass
-
-        """Gets a file from either cache or server dependent on if cache has file or not
-        """
     def get():
+        """
+        1.         
+        """
         pass
 
-        """Get file from cache. If the file is on the cache send the file to the client.
-        If the file is not on the cache, request the file from the server then send the file to the client
-        """
-    def getFromCache():
-        pass
+    def fileExistInDir(self, filename :str, path : str) -> str:
+        directory_path = ""
 
-        """Get requested file from server and sends it to the cache
-        """
-    def getFromServer():
-        pass
+        if path == "server":
+            directory_path = self.server_path
+
+        elif path == "cache":
+            directory_path = self.cache_path
+
+        elif path == "client":
+            return filename
+        
+        else:
+            sys.exit()
+
+        absolute_dir_path = os.path.abspath(directory_path)
+        file_path = os.path.join(absolute_dir_path, filename)
+
+        if os.path.exists(file_path):
+            return file_path
+        
+        return sys.exit()

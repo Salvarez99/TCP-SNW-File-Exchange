@@ -1,5 +1,6 @@
 import sys
 import socket
+from tcp_transport import *
 
 args = sys.argv
 
@@ -16,57 +17,15 @@ for arg in args:
 print()
 
 # TODO: Can be UAlbany VM?
+# HOST = "icsi416-fa23.its.albany.edu"
 HOST = "localhost"
-PORT = args[1]
-
-match args[-1]:
+PORT = int(args[1])
+serverTCP = TCP_Transport()
+match args[len(args) - 1]:
     case "tcp":
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.bind((HOST, PORT))
-            sock.listen()
-            client, addr = sock.accept()
-            # TODO: Send back appropriate message
-
-        with client:
-
-            newFile = open("receivedFile.txt", "wb")
-
-            # receiving expected file length
-            fileLength = client.recv(1024)
-            print(f"Length of expected file: {fileLength.decode()}\n")
-
-            # receiving expected file length
-            fl = (int)(fileLength.decode())  # expected file size
-            print("file-length:", fl)
-
-            receivedDataSize = 0
-            data = client.recv(1024)
-
-            while data:
-
-                # If no more data in socket, break
-                if not data:
-                    break
-
-                else:
-                    # print("data: ", data.decode())
-                    receivedDataSize += len(data)
-
-                    print(f"Data Received: {receivedDataSize}")
-                    newFile.write(data)
-
-                    """ We stop receving once we get the required bytes. 
-                            Or else it will keep waiting for the data from the client"""
-                    if (receivedDataSize < fl):
-                        data = client.recv(1024)
-                    else:
-                        break
-
-            newFile.close()
-            print("File Closing")
-
-            msg = "File Uploaded Successfully"
-            client.send(msg.encode())
+        serverTCP.listen(HOST,PORT)
+        #Call method to send receive file
+        serverTCP.temp()
 
         pass
     case "snw":

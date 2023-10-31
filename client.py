@@ -9,7 +9,7 @@ opt = ""
 if len(args) > 6 or len(args) < 6:
     print("Invalid argument length, Exiting.")
     sys.exit()
-elif args[-1] != "tcp" and args[-1] != "snw":
+elif args[len(args) - 1] != "tcp" and args[len(args) - 1] != "snw":
     print("Invalid Protocol, Exiting.")
     sys.exit()
 
@@ -17,9 +17,19 @@ for arg in args:
     print(f"{arg}", end=" ")
 print()
 
-tcp = TCP_Transport(args[1], int(args[2]), args[3], int(args[4]))
+# tcp = TCP_Transport(args[1], int(args[2]), args[3], int(args[4]))
+serverTCP = TCP_Transport()
+cacheTCP = TCP_Transport()
+
 
 while (opt != "quit"):
+
+    #Connect to server
+    serverTCP.connect(args[1], int(args[2]))
+    #Connect to cache
+    # cacheTCP.connect(args[3], int(args[4]))
+
+
     opt = input("Enter command: ")
     command = opt.split(" ")
 
@@ -30,15 +40,15 @@ while (opt != "quit"):
                 print("Awaiting server response.")
                 if args[-1] == "tcp":
                     # TODO: Get and print server response
-                    file = open(command[1], "rb")
-                    tcp.clientPutTCP(file)
                     print("tcp: put")
+                    serverTCP.put(command[1])
+
                 else:
                     # TODO: Get and print server response
                     print("snw: put")
                 pass
             case "get":
-                if args[-1] == "tcp":
+                if args[len(args) - 1] == "tcp":
                     # TODO: Get and print server response
                     print("tcp: get")
                 else:

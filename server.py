@@ -13,7 +13,8 @@ def main():
     # Parse command-line arguments
     PORT = int(sys.argv[1])
     connection_type = sys.argv[2]
-    HOST = "icsi416-fa23.its.albany.edu"
+    HOST = "169.226.22.10"
+
 
     # Validate connection type
     if connection_type not in ["tcp", "snw"]:

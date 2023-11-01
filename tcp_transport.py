@@ -82,6 +82,7 @@ class TCP_Transport:
         self.socket.send(file_size_length.encode())
         self.socket.send(str(file_size).encode())
 
+        # Send file over socket
         with open(file_path, "rb") as file:
             data = file.read(1024)
             while data:
@@ -196,3 +197,85 @@ class TCP_Transport:
         destination_path = os.path.join(absolute_dir_path, filename)
 
         return destination_path
+
+
+    """
+    Send a string over the socket to specified destination. String typically will be the sender, filename or response.
+    Param1: String being sent
+    Param2: Destination
+    """
+    def sendString(self, string : str, destination : str):
+        """
+        1. Find size of string
+        2. Send size of string
+        3. Send string
+        """
+
+        string_len = str(len(string)).zfill(10)
+        self.socket.send(string_len.encode())
+        self.socket.send(string.encode())
+        pass
+
+    """
+    Receive a string from the socket. String typically will be the sender, filename or response.
+    """
+    def receiveString(self, recv_socket : socket) -> str:
+        """
+        1. Receive size of string
+        2. Receive string
+        3. Return string
+        """
+        string_len = int(recv_socket.recv(10))
+        string = recv_socket.recv(string_len).decode()
+
+        return string
+
+    """
+    Send a file over the socket to specified destination.
+    Param1: String being sent
+    Param2: Destination
+    """
+    def sendFile(self, file, file_path : str ,destination : str):
+        """
+        1. Get file size
+        2. Send file size
+        3. Send file
+        """
+
+        file_size = os.path.getsize(file_path)
+        file_size_length = str(len(str(file_size))).zfill(10)
+        self.socket.send(file_size_length.encode())
+        self.socket.send(str(file_size).encode())
+
+        with open(file_path, "rb") as file:
+            data = file.read(1024)
+            while data:
+                self.socket.send(data)
+                data = file.read(1024)
+
+        pass
+
+    """
+    Receive a file from the socket.
+    """
+    def receiveFile(self, dest_path : str ,recv_socket : socket):
+        """
+        1. Receive file size
+        2. Receive file 
+        3. Store file
+        """
+
+        file_size_length = int(recv_socket.recv(10))
+        file_size = int(recv_socket.recv(file_size_length))
+
+        received_data = 0
+
+        with open(dest_path, "wb") as file:
+            while received_data < file_size:
+                data = recv_socket.recv(1024)
+                if not data:
+                    break
+                file.write(data)
+                received_data += len(data)
+        pass
+

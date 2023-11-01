@@ -21,13 +21,13 @@ print()
 serverTCP = TCP_Transport()
 cacheTCP = TCP_Transport()
 
+#Connect to server
+serverTCP.connect(args[1], int(args[2]))
+#Connect to cache
+# cacheTCP.connect(args[3], int(args[4]))
 
 while (opt != "quit"):
 
-    #Connect to server
-    serverTCP.connect(args[1], int(args[2]))
-    #Connect to cache
-    # cacheTCP.connect(args[3], int(args[4]))
 
 
     opt = input("Enter command: ")

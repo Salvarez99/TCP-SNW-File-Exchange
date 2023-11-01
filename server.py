@@ -24,8 +24,12 @@ def main():
     print(f"Server started on port {PORT} with connection type {connection_type}")
     serverTCP = TCP_Transport()
 
+
+
+    #Only time I need to check connection type is when using put command
     if sys.argv[len(sys.argv) - 1] == "tcp":
-        serverTCP.listen("localhost", PORT)
+        serverTCP.listen(HOST, PORT)
+        # serverTCP.listen("localhost", PORT)
         serverTCP.get()
 
     elif sys.argv[len(sys.argv) - 1] == "snw":

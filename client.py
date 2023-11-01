@@ -41,7 +41,7 @@ while (opt != "quit"):
                 if args[-1] == "tcp":
                     # TODO: Get and print server response
                     print("tcp: put")
-                    serverTCP.put(command[1], "server")
+                    serverTCP.put(command[1], "client", "server")
 
                 else:
                     # TODO: Get and print server response

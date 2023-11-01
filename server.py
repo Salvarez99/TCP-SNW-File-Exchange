@@ -26,7 +26,7 @@ def main():
 
     if sys.argv[len(sys.argv) - 1] == "tcp":
         serverTCP.listen("localhost", PORT)
-        serverTCP.temp()
+        serverTCP.get()
 
     elif sys.argv[len(sys.argv) - 1] == "snw":
         pass

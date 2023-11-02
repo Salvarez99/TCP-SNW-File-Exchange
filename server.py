@@ -2,43 +2,30 @@ import sys
 import socket
 from tcp_transport import *
 
-import sys
 
-def main():
-    # Check if the correct number of arguments is provided
-    if len(sys.argv) != 3:
-        print("Usage: python server.py <port> <connection_type>")
-        sys.exit(1)
+# Example cmd: ./server.py 20000 tcp
+#                  0         1   2
+# Command line error checking
+if len(sys.argv) > 3 or len(sys.argv) < 3:
+    print("Invalid argument length, Exiting.")
+    sys.exit()
+elif sys.argv[len(sys.argv) - 1] != "tcp" and sys.argv[len(sys.argv) - 1] != "snw":
+    print("Invalid Protocol, Exiting.")
+    sys.exit()
 
-    # Parse command-line arguments
-    PORT = int(sys.argv[1])
-    connection_type = sys.argv[2]
-    HOST = "169.226.22.10"
+# Print out commands
+for arg in sys.argv:
+    print(f"{arg}", end=" ")
+print()
 
+# HOST = "localhost"
+HOST = "169.226.22.10"
+PORT = int(sys.argv[1])
 
-    # Validate connection type
-    if connection_type not in ["tcp", "snw"]:
-        print("Invalid connection type. Choose either 'tcp' or 'snw'.")
-        sys.exit(1)
+# Create server socket and listen for connnections
+serverTCP = TCP_Transport()
 
-    # Your server logic goes here
-    print(f"Server started on port {PORT} with connection type {connection_type}")
-    serverTCP = TCP_Transport()
-
-
-
-    #Only time I need to check connection type is when using put command
-    if sys.argv[len(sys.argv) - 1] == "tcp":
-        serverTCP.listen(HOST, PORT)
-        # serverTCP.listen("localhost", PORT)
-        serverTCP.get()
-
-    elif sys.argv[len(sys.argv) - 1] == "snw":
-        pass
-    else:
-        sys.exit()
-
-
-
-if __name__ == "__main__":
-    main()
+# Keep server active
+while True:
+    serverTCP.listen(HOST, PORT)
+    serverTCP.tcp_server()

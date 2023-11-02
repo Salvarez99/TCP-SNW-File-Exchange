@@ -2,16 +2,20 @@ from io import BufferedReader
 import socket
 import os
 import sys
+import tcp_transport
 
 
 class TCP_Transport:
 
     def __init__(self) -> None:
         self.socket = None
-        self.HEADERSIZE = 20
-        self.client_path = "/home1/s/s/sa851266/project01/client_files"
-        self.server_path = "/home1/s/s/sa851266/project01/server_files"
-        self.cache_path = "/home1/s/s/sa851266/project01/cache_files"
+        # self.client_path = "/home1/s/s/sa851266/project01/client_files"
+        # self.server_path = "/home1/s/s/sa851266/project01/server_files"
+        # self.cache_path = "/home1/s/s/sa851266/project01/cache_files"
+
+        self.client_path = " "
+        self.server_path = " "
+        self.cache_path = " "
         pass
 
         """Connect to a Host
@@ -22,9 +26,9 @@ class TCP_Transport:
         self.socket.connect((serverIP, ServerPort))
         pass
 
-        """Listening for connections
-        """
-
+    """
+    Listening for connections
+    """
     def listen(self, serverIP: str, serverPort: int):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind((serverIP, serverPort))
@@ -32,11 +36,170 @@ class TCP_Transport:
         print("Listening...")
         pass
 
-        """Put a file into the server directly from client
-        Param1: filename: name of file being sent
-        Param2: path: the path where the file is located ("server" | "cache" | "client")
+    """
+    Client attempts to get file from cache
+    """
+    def tcp_client_get(self, file_name : str):
+        """
+        send sender 
+        send filename
+        
+        receive file 
+        receive response
+        
         """
 
+        self.sendString("client", self.socket)
+        self.sendString(file_name, self.socket)
+
+        dest_path = self.createDestinationPath(file_name, "client")
+
+        if dest_path is not None:
+            self.receiveFile(dest_path, self.socket)
+        else:
+            #Path doesnt exist
+            pass
+
+        response = self.receiveString(self.socket)
+        print(response)
+
+        pass
+
+    """
+    Client attempts to put file onto server
+    """
+    def tcp_client_put(self, file_name : str):
+        """
+        send sender
+
+        TODO: Expect that the file is only sent here and storage is handled on receiver side
+        send filename 
+        check if file exist
+            send file
+        if not 
+            exit
+        
+        receive response
+        """
+
+        sender = "client"
+        self.sendString(sender, self.socket)
+        self.sendString(file_name, self.socket)
+        
+        file_path = self.fileExistInDir(file_name, sender)
+
+        if file_path is not None:
+            self.sendFile(file_path, self.socket)
+        else:
+            sys.exit()
+
+        server_response = self.receiveString(self.socket)
+        print(server_response)
+
+        pass
+
+    def tcp_server(self):
+        
+        while True:
+            client_socket, address = self.socket.accept()
+            """
+            Receive sender
+
+            if client:
+                receive file name
+                cerate destination path
+                open new file in storage location
+                while
+                    receive file
+                    write to opened file
+                send response
+
+            elif cache:
+                receive filename
+                if (file exist)/(look for file):
+                    TODO: Expect that the file is only sent here and storage is handled on receiver side 
+                    while 
+                        send file
+                    send response
+            else:
+                quit
+            """
+
+            sender = self.receiveString(client_socket)
+
+            if sender == "client":
+                file_name = self.receiveString(client_socket)
+                dest_path = self.createDestinationPath(file_name, "server")
+                self.receiveFile(dest_path, client_socket)
+                self.sendString("File Uploaded Sucessfully", client_socket)
+
+                pass
+            elif sender == "cache":
+                file_name = self.receiveString(client_socket)
+                file_path = self.fileExistInDir(file_name, "server")
+
+                if file_path is not None:
+                    self.sendFile(file_path, client_socket)
+                    self.sendString("File delivered from origin.", client_socket)
+
+            else:
+                sys.exit()
+
+
+    def tcp_cache_get(self, passed_socket : socket = None)-> bool:
+        """
+        While true 
+            accept connections 
+            receive sender 
+            receive filename
+            
+            if (file exist)
+                send file to client
+                send response to client
+            else
+                send sender to server 
+                send filename to server
+
+                open new file with filename in storage location
+                while
+                    receive file 
+                    write to opened file
+                receive response
+
+                send file to client 
+                send response to client
+        """
+
+        while True: 
+            client_socket, address = self.socket.accept()
+            sender = self.receiveString(client_socket)
+            file_name = self.receiveString(client_socket)
+
+            file_path = self.fileExistInDir(file_name, "cache")
+
+            if file_path is not None:
+                self.sendFile(file_path, client_socket)
+                self.sendString("File delivered from cache.", client_socket)
+            else:
+                if isinstance(passed_socket, socket):
+
+                    sender = "cache"
+                    self.sendString(sender, passed_socket)
+                    self.sendString(file_name, passed_socket)
+
+                    self.receiveFile("cache", passed_socket)
+                    response = self.receiveString(passed_socket)
+
+                    file_path = self.fileExistInDir(file_name, "cache")
+
+
+                    self.sendFile(file_path, client_socket)
+                    self.sendString(response, client_socket)
+
+    """Put a file into the server directly from client
+    Param1: filename: name of file being sent
+    Param2: path: the path where the file is located ("server" | "cache" | "client")
+    """
     def put(self, fileName: str, location_of_File: str, destination: str):
         """
         1. Designate which path we should look in to find the file that is going to be sent
@@ -163,7 +326,7 @@ class TCP_Transport:
         elif location == "cache":
             directory_path = self.cache_path
 
-        elif location == "client":
+        elif location == "":
             return filename
 
         else:
@@ -177,6 +340,11 @@ class TCP_Transport:
 
         return sys.exit()
 
+
+    """
+    Creates a destination path on where to store the file
+    Ex. path/to/storage/filename.txt
+    """
     def createDestinationPath(self, filename: str, destination: str) -> str:
         directory_path = ""
 
@@ -204,16 +372,19 @@ class TCP_Transport:
     Param1: String being sent
     Param2: Destination
     """
-    def sendString(self, string : str, destination : str):
+    def sendString(self, string : str, send_to_socket : socket):
         """
         1. Find size of string
         2. Send size of string
         3. Send string
         """
 
+        #ex. 0000000011
         string_len = str(len(string)).zfill(10)
-        self.socket.send(string_len.encode())
-        self.socket.send(string.encode())
+        #ex. send 0000000011
+        send_to_socket.send(string_len.encode())
+        #send string
+        send_to_socket.send(string.encode())
         pass
 
     """
@@ -225,7 +396,9 @@ class TCP_Transport:
         2. Receive string
         3. Return string
         """
+        #ex. 0000000011 -> 11
         string_len = int(recv_socket.recv(10))
+        #ex. recv(11 bytes)
         string = recv_socket.recv(string_len).decode()
 
         return string
@@ -235,7 +408,7 @@ class TCP_Transport:
     Param1: String being sent
     Param2: Destination
     """
-    def sendFile(self, file, file_path : str ,destination : str):
+    def sendFile(self, file_path : str, send_to_socket : socket):
         """
         1. Get file size
         2. Send file size
@@ -244,15 +417,14 @@ class TCP_Transport:
 
         file_size = os.path.getsize(file_path)
         file_size_length = str(len(str(file_size))).zfill(10)
-        self.socket.send(file_size_length.encode())
-        self.socket.send(str(file_size).encode())
+        send_to_socket.send(file_size_length.encode())
+        send_to_socket.send(str(file_size).encode())
 
         with open(file_path, "rb") as file:
             data = file.read(1024)
             while data:
-                self.socket.send(data)
+                send_to_socket.send(data)
                 data = file.read(1024)
-
         pass
 
     """

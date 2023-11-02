@@ -13,9 +13,10 @@ class TCP_Transport:
         # self.server_path = "/home1/s/s/sa851266/project01/server_files"
         # self.cache_path = "/home1/s/s/sa851266/project01/cache_files"
 
-        self.client_path = " "
-        self.server_path = " "
-        self.cache_path = " "
+        # "C:\Users\xenep\OneDrive\Documents\UAlbany\Fall_2023\ICSI_416_Computer_Communication_Networks\Projects\Project 01\Source\cache_files"
+        self.client_path = "C:\\Users\\xenep\\OneDrive\Documents\\UAlbany\\Fall_2023\\ICSI_416_Computer_Communication_Networks\\Projects\\Project 01\\Source\\client_files"
+        self.server_path = "C:\\Users\\xenep\\OneDrive\Documents\\UAlbany\\Fall_2023\\ICSI_416_Computer_Communication_Networks\\Projects\\Project 01\\Source\\server_files"
+        self.cache_path = "C:\\Users\\xenep\\OneDrive\Documents\\UAlbany\\Fall_2023\\ICSI_416_Computer_Communication_Networks\\Projects\\Project 01\\Source\\cache_files"
         pass
 
         """Connect to a Host
@@ -84,7 +85,10 @@ class TCP_Transport:
 
         sender = "client"
         self.sendString(sender, self.socket)
+        print(f"Sending sender: {sender}")
         self.sendString(file_name, self.socket)
+        print(f"Sending file name: {file_name}")
+
         
         file_path = self.fileExistInDir(file_name, sender)
 
@@ -95,6 +99,7 @@ class TCP_Transport:
 
         server_response = self.receiveString(self.socket)
         print(server_response)
+        self.socket.close()
 
         pass
 
@@ -128,8 +133,11 @@ class TCP_Transport:
             sender = self.receiveString(client_socket)
 
             if sender == "client":
+                print(f"Sender is {sender}")
                 file_name = self.receiveString(client_socket)
+                print(f"Incoming file: {file_name}")
                 dest_path = self.createDestinationPath(file_name, "server")
+                print(f"Destination Path: {dest_path}")
                 self.receiveFile(dest_path, client_socket)
                 self.sendString("File Uploaded Sucessfully", client_socket)
 
@@ -320,22 +328,31 @@ class TCP_Transport:
     def fileExistInDir(self, filename: str, location: str) -> str:
         directory_path = ""
 
+        print("In fileExistInDir")
+
         if location == "server":
             directory_path = self.server_path
 
         elif location == "cache":
             directory_path = self.cache_path
 
-        elif location == "":
-            return filename
-
+        elif location == "client":
+            directory_path = self.client_path
+            # return filename
         else:
             sys.exit()
 
         absolute_dir_path = os.path.abspath(directory_path)
-        file_path = os.path.join(absolute_dir_path, filename)
+        # print(f"Abs Dir Path: {absolute_dir_path}")
 
-        if os.path.exists(file_path):
+        file_path = os.path.join(absolute_dir_path, filename)
+        print(f"File path: {file_path}")
+
+        ans = os.path.exists(file_path)
+        print(f"Ans: {ans}")
+
+        if ans:
+        # if os.path.exists(file_path):
             return file_path
 
         return sys.exit()
@@ -418,8 +435,11 @@ class TCP_Transport:
         file_size = os.path.getsize(file_path)
         file_size_length = str(len(str(file_size))).zfill(10)
         send_to_socket.send(file_size_length.encode())
+        print(f"Sending file size length: {file_size_length}")
         send_to_socket.send(str(file_size).encode())
+        print(f"Sending file size : {file_size}")
 
+        print("Sending file")
         with open(file_path, "rb") as file:
             data = file.read(1024)
             while data:
@@ -436,12 +456,15 @@ class TCP_Transport:
         2. Receive file 
         3. Store file
         """
-
-        file_size_length = int(recv_socket.recv(10))
+        
+        file_size_length = int(recv_socket.recv(10).decode())
+        print(f"Incoming file size length: {file_size_length}")
         file_size = int(recv_socket.recv(file_size_length))
+        print(f"Incoming file size: {file_size}")
+
 
         received_data = 0
-
+        print("Receiving file")
         with open(dest_path, "wb") as file:
             while received_data < file_size:
                 data = recv_socket.recv(1024)

@@ -18,8 +18,8 @@ for arg in sys.argv:
     print(f"{arg}", end=" ")
 print()
 
-# HOST = "localhost"
-HOST = "169.226.22.10"
+HOST = "localhost"
+# HOST = "169.226.22.10"
 PORT = int(sys.argv[1])
 
 # Create server socket and listen for connnections

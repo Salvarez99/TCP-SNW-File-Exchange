@@ -37,6 +37,10 @@ class TCP_Transport:
         print("Listening...")
         pass
 
+    def close(self):
+        self.socket.close()
+        pass
+
     """
     Client attempts to get file from cache
     """
@@ -55,11 +59,11 @@ class TCP_Transport:
 
         dest_path = self.createDestinationPath(file_name, "client")
 
-        if dest_path is not None:
-            self.receiveFile(dest_path, self.socket)
-        else:
+        # if dest_path is not None:
+        self.receiveFile(dest_path, self.socket)
+        # else:
             #Path doesnt exist
-            pass
+            # pass
 
         response = self.receiveString(self.socket)
         print(response)
@@ -104,9 +108,14 @@ class TCP_Transport:
         pass
 
     def tcp_server(self):
+
+        print("In tcp_server")
         
         while True:
+            print("Attempting to accept connections")
             client_socket, address = self.socket.accept()
+            print("Connection established")
+
             """
             Receive sender
 
@@ -140,7 +149,6 @@ class TCP_Transport:
                 print(f"Destination Path: {dest_path}")
                 self.receiveFile(dest_path, client_socket)
                 self.sendString("File Uploaded Sucessfully", client_socket)
-
                 pass
             elif sender == "cache":
                 file_name = self.receiveString(client_socket)
@@ -149,7 +157,7 @@ class TCP_Transport:
                 if file_path is not None:
                     self.sendFile(file_path, client_socket)
                     self.sendString("File delivered from origin.", client_socket)
-
+                    # pass
             else:
                 sys.exit()
 
@@ -189,15 +197,17 @@ class TCP_Transport:
                 self.sendFile(file_path, client_socket)
                 self.sendString("File delivered from cache.", client_socket)
             else:
-                if isinstance(passed_socket, socket):
+                if isinstance(passed_socket, socket.socket):
 
                     sender = "cache"
                     self.sendString(sender, passed_socket)
                     self.sendString(file_name, passed_socket)
 
-                    self.receiveFile("cache", passed_socket)
-                    response = self.receiveString(passed_socket)
+                    dest_path = self.createDestinationPath(file_name, "cache")
+                    self.receiveFile(dest_path, passed_socket)
 
+
+                    response = self.receiveString(passed_socket)
                     file_path = self.fileExistInDir(file_name, "cache")
 
 
@@ -355,7 +365,7 @@ class TCP_Transport:
         # if os.path.exists(file_path):
             return file_path
 
-        return sys.exit()
+        return None
 
 
     """
@@ -372,8 +382,7 @@ class TCP_Transport:
             directory_path = self.cache_path
 
         elif destination == "client":
-            # TODO: uncomment after testing  directory_path = self.client_path
-            directory_path = ""
+            directory_path = self.client_path
 
         else:
             sys.exit()
@@ -399,9 +408,12 @@ class TCP_Transport:
         #ex. 0000000011
         string_len = str(len(string)).zfill(10)
         #ex. send 0000000011
+        print(f"Sending string length: {string_len}")
         send_to_socket.send(string_len.encode())
         #send string
+        print(f"Sending string: {string}")
         send_to_socket.send(string.encode())
+
         pass
 
     """
@@ -414,9 +426,12 @@ class TCP_Transport:
         3. Return string
         """
         #ex. 0000000011 -> 11
-        string_len = int(recv_socket.recv(10))
+        string_len = int(recv_socket.recv(10).decode())
+        print(f"Receiving string length: {string_len}")
+
         #ex. recv(11 bytes)
         string = recv_socket.recv(string_len).decode()
+        print(f"Receiving string: {string}")
 
         return string
 
@@ -472,5 +487,6 @@ class TCP_Transport:
                     break
                 file.write(data)
                 received_data += len(data)
+            print("File Received")
         pass
 

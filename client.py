@@ -21,10 +21,7 @@ cacheTCP = TCP_Transport()
 while (opt != "quit"):
 
     # Connect to server
-    serverTCP.connect(args[1], int(args[2]))
     # Connect to cache
-    # cacheTCP.connect(args[3], int(args[4]))
-
     opt = input("Enter command: ")
     command = opt.split(" ")
 
@@ -38,7 +35,9 @@ while (opt != "quit"):
                     # perform interaction 
                     # close socket (client)
                 file_name = command[1]
+                serverTCP.connect(args[1], int(args[2]))
                 serverTCP.tcp_client_put(file_name)
+                serverTCP.close()
 
             else:
                 print("snw: put")
@@ -53,7 +52,9 @@ while (opt != "quit"):
                     # perform interaction
                     # close socket (client)
                 file_name = command[1]
+                cacheTCP.connect(args[3], int(args[4]))
                 cacheTCP.tcp_client_get(file_name)
+                cacheTCP.close()
             else:
                 # TODO: Get and print server response
                 print("snw: get")

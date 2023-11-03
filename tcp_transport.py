@@ -9,13 +9,13 @@ class TCP_Transport:
 
     def __init__(self) -> None:
         self.socket = None
-        # self.client_path = "/home1/s/s/sa851266/project01/client_files"
-        # self.server_path = "/home1/s/s/sa851266/project01/server_files"
-        # self.cache_path = "/home1/s/s/sa851266/project01/cache_files"
+        # self.client_path = "./home1/s/s/sa851266/project01/client_files"
+        # self.server_path = "./home1/s/s/sa851266/project01/server_files"
+        # self.cache_path = "./home1/s/s/sa851266/project01/cache_files"
 
-        self.client_path = "C:\\Users\\xenep\\OneDrive\Documents\\UAlbany\\Fall_2023\\ICSI_416_Computer_Communication_Networks\\Projects\\Project 01\\Source\\client_files"
-        self.server_path = "C:\\Users\\xenep\\OneDrive\Documents\\UAlbany\\Fall_2023\\ICSI_416_Computer_Communication_Networks\\Projects\\Project 01\\Source\\server_files"
-        self.cache_path = "C:\\Users\\xenep\\OneDrive\Documents\\UAlbany\\Fall_2023\\ICSI_416_Computer_Communication_Networks\\Projects\\Project 01\\Source\\cache_files"
+        # self.client_path = ".\\client_files"
+        # self.server_path = ".\\server_files"
+        # self.cache_path = ".\\cache_files"
         pass
 
     """Connect to a Host

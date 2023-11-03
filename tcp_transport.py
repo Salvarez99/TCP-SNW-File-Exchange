@@ -9,13 +9,16 @@ class TCP_Transport:
 
     def __init__(self) -> None:
         self.socket = None
-        # self.client_path = "./home1/s/s/sa851266/project01/client_files"
-        # self.server_path = "./home1/s/s/sa851266/project01/server_files"
-        # self.cache_path = "./home1/s/s/sa851266/project01/cache_files"
 
-        # self.client_path = ".\\client_files"
+        #VM paths
+        self.server_path = "../server_files"
+        # self.cache_path = "../cache_files"
+        # self.client_path = "../client_files"
+
+        #local paths
         # self.server_path = ".\\server_files"
-        # self.cache_path = ".\\cache_files"
+        self.cache_path = ".\\cache_files"
+        self.client_path = ".\\client_files"
         pass
 
     """Connect to a Host
@@ -83,9 +86,7 @@ class TCP_Transport:
 
         sender = "client"
         self.sendString(sender, self.socket)
-        # print(f"Sending sender: {sender}")
         self.sendString(file_name, self.socket)
-        # print(f"Sending file name: {file_name}")
 
         
         file_path = self.fileExistInDir(file_name, sender)
@@ -133,11 +134,8 @@ class TCP_Transport:
             sender = self.receiveString(client_socket)
 
             if sender == "client":
-                # print(f"Sender is {sender}")
                 file_name = self.receiveString(client_socket)
-                # print(f"Incoming file: {file_name}")
                 dest_path = self.createDestinationPath(file_name, "server")
-                # print(f"Destination Path: {dest_path}")
                 self.receiveFile(dest_path, client_socket)
                 self.sendString("File Uploaded Sucessfully", client_socket)
                 pass
@@ -262,6 +260,8 @@ class TCP_Transport:
 
         absolute_dir_path = os.path.abspath(directory_path)
         destination_path = os.path.join(absolute_dir_path, filename)
+
+        # print(f"Destination Path: {destination_path}")
 
         return destination_path
 

@@ -89,9 +89,9 @@ class TCP_Transport:
 
         sender = "client"
         self.sendString(sender, self.socket)
-        print(f"Sending sender: {sender}")
+        # print(f"Sending sender: {sender}")
         self.sendString(file_name, self.socket)
-        print(f"Sending file name: {file_name}")
+        # print(f"Sending file name: {file_name}")
 
         
         file_path = self.fileExistInDir(file_name, sender)
@@ -162,7 +162,7 @@ class TCP_Transport:
                 sys.exit()
 
 
-    def tcp_cache_get(self, passed_socket : socket = None)-> bool:
+    def tcp_cache_get(self, server_connection, serverIP : str, serverPort : int):
         """
         While true 
             accept connections 
@@ -197,22 +197,25 @@ class TCP_Transport:
                 self.sendFile(file_path, client_socket)
                 self.sendString("File delivered from cache.", client_socket)
             else:
-                if isinstance(passed_socket, socket.socket):
+                if isinstance(server_connection, TCP_Transport):
+
+                    server_connection.connect(serverIP, serverPort)
 
                     sender = "cache"
-                    self.sendString(sender, passed_socket)
-                    self.sendString(file_name, passed_socket)
+                    self.sendString(sender, server_connection.socket)
+                    self.sendString(file_name, server_connection.socket)
 
                     dest_path = self.createDestinationPath(file_name, "cache")
-                    self.receiveFile(dest_path, passed_socket)
+                    self.receiveFile(dest_path, server_connection.socket)
 
 
-                    response = self.receiveString(passed_socket)
+                    response = self.receiveString(server_connection.socket)
                     file_path = self.fileExistInDir(file_name, "cache")
 
 
                     self.sendFile(file_path, client_socket)
                     self.sendString(response, client_socket)
+                    server_connection.close()
 
     """Put a file into the server directly from client
     Param1: filename: name of file being sent
@@ -482,11 +485,13 @@ class TCP_Transport:
         print("Receiving file")
         with open(dest_path, "wb") as file:
             while received_data < file_size:
+                print(f"Received data: {received_data}")
                 data = recv_socket.recv(1024)
                 if not data:
                     break
                 file.write(data)
                 received_data += len(data)
+            print(f"Received data: {received_data}")
             print("File Received")
         pass
 

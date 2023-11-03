@@ -24,11 +24,14 @@ elif sys.argv[len(sys.argv) - 1] != "tcp" and sys.argv[len(sys.argv) - 1] != "sn
 
 #Socket that connects to server
 serverTCP = TCP_Transport()
-serverTCP.connect(sys.argv[2], int(sys.argv[3]))
 
 #socket that listens for client connection
 clientTCP = TCP_Transport()
-clientTCP.listen("localhost", int(sys.argv[1]))
+HOST = "localhost"
+PORT = int(sys.argv[1])
+
 
 while True:
-    clientTCP.tcp_cache_get(serverTCP.socket)
+    # print(f"Establishing Cache Server on \nHOST: {HOST}\nPORT: {PORT}")
+    clientTCP.listen(HOST, PORT)
+    clientTCP.tcp_cache_get(serverTCP, sys.argv[2], int(sys.argv[3]))

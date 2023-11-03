@@ -39,6 +39,7 @@ class TCP_Transport:
 
     def close(self):
         self.socket.close()
+        print("Connection closed")
         pass
 
     """
@@ -484,14 +485,24 @@ class TCP_Transport:
         received_data = 0
         print("Receiving file")
         with open(dest_path, "wb") as file:
+
+            data_left = file_size
+            print(f"Total data to receive: {data_left}")
+
             while received_data < file_size:
-                print(f"Received data: {received_data}")
-                data = recv_socket.recv(1024)
-                if not data:
-                    break
-                file.write(data)
-                received_data += len(data)
-            print(f"Received data: {received_data}")
+                if data_left < 1024:
+                    data = recv_socket.recv(data_left)
+                    file.write(data)
+                    received_data += data_left
+                    print(f"Received data: {received_data}")
+                else:
+                    data = recv_socket.recv(1024)
+                    file.write(data)
+                    received_data += len(data)
+                    data_left -= len(data)
+                    print(f"Received data: {received_data}")
+                    print(f"Data left: {data_left}")
+
             print("File Received")
         pass
 

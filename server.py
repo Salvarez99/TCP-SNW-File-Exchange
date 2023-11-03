@@ -1,5 +1,4 @@
 import sys
-import socket
 from tcp_transport import *
 
 

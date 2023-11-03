@@ -1,17 +1,5 @@
 from tcp_transport import *
 
-"""
-Error check commands
-
-Create socket
-Connect to server
-
-Listen for connection
-
-tcp_cache()
-
-
-"""
 # Example cmd: ./cache.py 20000 localhost 10000 tcp
 #                   0        1       2       3
 # Command line error checking

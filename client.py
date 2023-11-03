@@ -20,8 +20,6 @@ cacheTCP = TCP_Transport()
 
 while (opt != "quit"):
 
-    # Connect to server
-    # Connect to cache
     opt = input("Enter command: ")
     command = opt.split(" ")
 
@@ -30,10 +28,6 @@ while (opt != "quit"):
         if command[0] == "put":
             print("Awaiting server response.")
             if args[-1] == "tcp":
-                print("tcp: put")
-                # call method to interact with server : tcp_server()
-                    # perform interaction 
-                    # close socket (client)
                 file_name = command[1]
                 serverTCP.connect(args[1], int(args[2]))
                 serverTCP.tcp_client_put(file_name)
@@ -47,10 +41,6 @@ while (opt != "quit"):
             pass
         elif command[0] == "get":
             if args[len(args) - 1] == "tcp":
-                print("tcp: get")
-                # call method to interact with cache : tcp_cache()
-                    # perform interaction
-                    # close socket (client)
                 file_name = command[1]
                 cacheTCP.connect(args[3], int(args[4]))
                 cacheTCP.tcp_client_get(file_name)
@@ -76,5 +66,4 @@ while (opt != "quit"):
         print("Invalid command, Exiting.")
         sys.exit()
 
-# TODO: close all opened connections? might not have to do if I use "with"
 print("Exiting program!")

@@ -60,7 +60,7 @@ while True:
 """
 
 while True:
-    if sys.argv[len(sys.argv - 1)] == "snw":
+    if sys.argv[(len(sys.argv) - 1)] == "snw":
         clientTCP.listen(HOST, PORT)
         client_socket, address = clientTCP.socket.accept()
 
@@ -70,7 +70,7 @@ while True:
         file_path = clientTCP.fileExistInDir(file_name, clientTCP.cache_path)
 
         if file_path is not None:
-            cacheUDP.put(file_path, address)
+            cacheUDP.udp_put(file_path, address)
             clientTCP.sendString("File delivered from cache.", client_socket)
             cacheUDP.close()
             pass
@@ -81,13 +81,13 @@ while True:
             serverTCP.sendString(file_name, serverTCP.socket)
             dest_path = serverTCP.createDestinationPath(file_name, "cache")
 
-            cacheUDP.get(dest_path, server_address)
+            cacheUDP.udp_get(dest_path, server_address)
             response = serverTCP.receiveString(serverTCP.socket)
             clientTCP.sendString(response, client_socket)
             serverTCP.close()
             pass
         pass
-    elif sys.argv[len(sys.argv - 1)] == "tcp":
+    elif sys.argv[(len(sys.argv) - 1)] == "tcp":
 
     # while True:
         # print(f"Establishing Cache Server on \nHOST: {HOST}\nPORT: {PORT}")

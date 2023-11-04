@@ -65,7 +65,8 @@ while (opt != "quit"):
                 file_path = serverTCP.fileExistInDir(file_name, "client")
 
                 if file_path is not None:
-                    clientUDP.put(file_path, server_address)
+                    server_return_address = serverTCP.socket.getpeername()
+                    clientUDP.udp_put(file_path, server_return_address)
                     response = serverTCP.receiveString(serverTCP.socket)
                     print(response)
                     clientUDP.close()
@@ -97,7 +98,7 @@ while (opt != "quit"):
                 cacheTCP.sendString(file_name, cacheTCP.socket)
 
                 dest_path = cacheTCP.createDestinationPath(file_name, "client")
-                clientUDP.get(dest_path, cache_address)
+                clientUDP.udp_get(dest_path, cache_address)
                 response = cacheTCP.receiveString(cacheTCP.socket)
                 print(response)
                 clientUDP.close()

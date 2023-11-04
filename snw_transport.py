@@ -38,7 +38,7 @@ class UDP_Transport:
     @Param1: file_path, path leading to location of file being sent
     @Param2: address, return address of Receiver
     """
-    def udp_put(self, file_path : str, address : socket._RetAddress):
+    def udp_put(self, file_path : str, address):
         
         """
         Calculate file size
@@ -64,7 +64,7 @@ class UDP_Transport:
         file_size_length = "LEN:" + str(len(str(file_size))).zfill(10)
 
         self.socket.sendto(file_size_length.encode(), address)
-        self.socket.sendto(file_size.encode(), address)
+        # self.socket.sendto(str(file_size).encode(), address)
 
         with open(file_path, "rb") as file:
 
@@ -103,7 +103,7 @@ class UDP_Transport:
     @Param1: dest_path, path where file is to be stored
     @Param2: address, return address of Sender 
     """
-    def udp_get(self, dest_path : str, address : socket._RetAddress):
+    def udp_get(self, dest_path : str, address):
         """
         Receive file size (LEN:Bytes)
         while received data != file size:
@@ -123,8 +123,8 @@ class UDP_Transport:
         try:
             data, return_address = self.socket.recvfrom(self.HEADERSIZE)
             self.socket.settimeout(1)
-            file_size = int(data.decode()[self.LEN - 1:])
-        except self.socket.timeout:
+            file_size = int(data.decode()[self.LEN:])
+        except socket.timeout:
             print("Did not receive data. Terminating.")
         finally: 
             self.socket.settimeout(None)
@@ -148,7 +148,7 @@ class UDP_Transport:
                             received_data += data_left
 
                             #Send ACK
-                            self.socket.sendto("ACK".encode(), address)
+                            self.socket.sendto("ACK".encode(), return_address)
                             self.socket.settimeout(1)
 
                     else:
@@ -158,10 +158,10 @@ class UDP_Transport:
                         data_left -= len(data)
 
                         #Send ACK
-                        self.socket.sendto("ACK".encode(), address)
+                        self.socket.sendto("ACK".encode(), return_address)
                         self.socket.settimeout(1)
 
-            except self.socket.timeout:
+            except socket.timeout:
                 print("Data transmission terminated prematurely.")    
             finally:
                 self.socket.settimeout(None)

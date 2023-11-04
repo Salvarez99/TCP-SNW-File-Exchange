@@ -10,7 +10,7 @@ from snw_transport import *
 if len(sys.argv) > 3 or len(sys.argv) < 3:
     print("Invalid argument length, Exiting.")
     sys.exit()
-elif sys.argv[len(sys.argv) - 1] != "tcp" and sys.argv[len(sys.argv) - 1] != "snw":
+elif sys.argv[(len(sys.argv) - 1)] != "tcp" and sys.argv[(len(sys.argv) - 1)] != "snw":
     print("Invalid Protocol, Exiting.")
     sys.exit()
 
@@ -51,11 +51,11 @@ while True:
                 TCP send response to cache
 """
 while True: 
-    if sys.argv[len(sys.argv - 1)] == "tcp":
+    if sys.argv[(len(sys.argv) - 1)] == "tcp":
         serverTCP.listen(HOST, PORT)
         serverTCP.tcp_server()
         pass
-    elif sys.argv[len(sys.argv - 1)] == "snw":
+    elif sys.argv[(len(sys.argv) - 1)] == "snw":
         serverTCP.listen(HOST,PORT)
         incoming_socket, address = serverTCP.socket.accept()
 
@@ -64,7 +64,7 @@ while True:
 
         if sender == "client":
             dest_path = serverTCP.createDestinationPath(file_name, "server")
-            serverUDP.get(dest_path, address)
+            serverUDP.udp_get(dest_path, address)
             serverTCP.sendString("File successfully uploaded.", incoming_socket)
             serverUDP.close()
             pass
@@ -72,7 +72,7 @@ while True:
             file_path = serverTCP.fileExistInDir(file_name, "server")
 
             if file_path is not None:
-                serverUDP.put(file_path, address)
+                serverUDP.udp_put(file_path, address)
                 serverTCP.sendString("File delivered from origin.", incoming_socket)
                 serverUDP.close()
                 pass

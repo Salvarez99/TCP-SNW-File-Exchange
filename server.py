@@ -1,5 +1,7 @@
 import sys
 from tcp_transport import *
+from snw_transport import *
+
 
 
 # Example cmd: ./server.py 20000 tcp
@@ -23,8 +25,59 @@ PORT = int(sys.argv[1])
 
 # Create server socket and listen for connnections
 serverTCP = TCP_Transport()
+serverUDP = UDP_Transport()
 
-# Keep server active
-while True:
-    serverTCP.listen(HOST, PORT)
-    serverTCP.tcp_server()
+serverUDP.createSocket()
+serverUDP.bind(HOST, PORT)
+
+"""
+while True: 
+    If ("TCP"):
+        keep the same
+    Elif ("UDP"):
+            TCP listen
+            TCP accept
+    
+            recv sender
+            recv filename
+    
+            if(sender is client):
+                UDP.get(destination path)
+                TCP send response to client
+                Close UDP
+    
+            elif(sender is cache):
+                UDP.put(file path, address)
+                TCP send response to cache
+"""
+while True: 
+    if sys.argv[len(sys.argv - 1)] == "tcp":
+        serverTCP.listen(HOST, PORT)
+        serverTCP.tcp_server()
+        pass
+    elif sys.argv[len(sys.argv - 1)] == "snw":
+        serverTCP.listen(HOST,PORT)
+        incoming_socket, address = serverTCP.socket.accept()
+
+        sender = serverTCP.receiveString(incoming_socket)
+        file_name = serverTCP.receiveString(incoming_socket)
+
+        if sender == "client":
+            dest_path = serverTCP.createDestinationPath(file_name, "server")
+            serverUDP.get(dest_path, address)
+            serverTCP.sendString("File successfully uploaded.", incoming_socket)
+            serverUDP.close()
+            pass
+        elif sender == "cache":
+            file_path = serverTCP.fileExistInDir(file_name, "server")
+
+            if file_path is not None:
+                serverUDP.put(file_path, address)
+                serverTCP.sendString("File delivered from origin.", incoming_socket)
+                serverUDP.close()
+                pass
+            else:
+                sys.exit()
+            pass
+
+        pass

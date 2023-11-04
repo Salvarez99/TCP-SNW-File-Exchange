@@ -1,8 +1,6 @@
-from io import BufferedReader
 import socket
 import os
 import sys
-import tcp_transport
 
 
 class TCP_Transport:
@@ -137,7 +135,7 @@ class TCP_Transport:
                 file_name = self.receiveString(client_socket)
                 dest_path = self.createDestinationPath(file_name, "server")
                 self.receiveFile(dest_path, client_socket)
-                self.sendString("File Uploaded Sucessfully", client_socket)
+                self.sendString("File successfully uploaded.", client_socket)
                 pass
             elif sender == "cache":
                 file_name = self.receiveString(client_socket)
